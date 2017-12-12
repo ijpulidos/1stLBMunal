@@ -14,19 +14,22 @@ double dt = 1.0;
 double cs2 = 1.0/3.0;  // Velocidad térmica/sonido al cuadrado
 //double cs2 = 0.69795332201968308823840905538933;
 
+double k = 2*M_PI/Lx;  // Número de onda característico del espacio
+double k2 = k*k;
+
 double potential(int i){  // i por convención es índice de variable espacial
     /*
     Función de condición inicial de potencial.
     */
 	double g;
-	g=0.0;
+	g=-sin(k*i)/k2;
 	return (g);
 }
 double charge_density(int i){
     /*
     Función para definir la densidad de carga
     */
-	return ( 0.0 );
+	return ( sin(k*i) );
 }
 
 double fi[Lx][N], fip[Lx][N];  // Distribuciones (2 copias)
@@ -74,7 +77,7 @@ void Inicio(void){
 	
 	for(int i=0;i<Lx;i++)
 		for(int n=0;n<N;n++){
-			fi[i][n] = potential(i)*chi_feq[n];  // Se inicializa f a la función de equilibrio
+			fi[i][n] = 0*potential(i)*chi_feq[n];  // Se inicializa f a la función de equilibrio
 		}
 	
 	
@@ -115,6 +118,18 @@ void Evolucion(int t){
 	
 }
 
+double rmsError(void){
+    /*
+    Function that computes the root-mean-squre error between the analytical and numerical solution
+    */
+    int i;
+    sum = 0;
+    for (i=0; i<Lx; i++){
+       sum += (GetPhi(i) - potential(i))*(GetPhi(i) - potential(i));
+    }
+    return sqrt(sum/Lx);
+}
+
 int main(){
 	char filename[3][60];  // Tres archivos de salida: densidad carga, potencial, potencial analítico
 	Inicio();  // Inicializo lattice
@@ -150,12 +165,13 @@ int main(){
 	for(int i=0;i<Lx;i++){
 		fprintf(X[0],"%.7e \n", GetPhi(i));
 		fprintf(X[1],"%.7e \n", GetRho(i));
-		fprintf(X[2],"%.7e \n", 0.0 );
+		fprintf(X[2],"%.7e \n", potential(i) );
 	}
 
 	// Cierre de archivos
 	for(int a=0;a<2;a++)
 		fclose(X[a]);
+
 	
 	return 0;
 
