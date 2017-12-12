@@ -123,7 +123,7 @@ double rmsError(void){
     Function that computes the root-mean-squre error between the analytical and numerical solution
     */
     int i;
-    sum = 0;
+    double sum = 0;
     for (i=0; i<Lx; i++){
        sum += (GetPhi(i) - potential(i))*(GetPhi(i) - potential(i));
     }
@@ -171,6 +171,7 @@ int main(){
 	// Cierre de archivos
 	for(int a=0;a<2;a++)
 		fclose(X[a]);
+
 
 	
 	return 0;
