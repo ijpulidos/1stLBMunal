@@ -33,3 +33,10 @@ following
     set pm3d
     unset surface
     splot "ondas.dat"
+
+## LB method for Poisson eq. - 2017-12-12
+
+The idea in this session was completing the code for the LBM for the Poisson equation.
+
+Completing/implementing density charges and initial conditions and finding a power law for
+the error coefficient epsilon respect to the size of the system.
