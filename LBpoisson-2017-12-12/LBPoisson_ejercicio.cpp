@@ -16,20 +16,21 @@ double cs2 = 1.0/3.0;  // Velocidad térmica/sonido al cuadrado
 
 double k = 2*M_PI/Lx;  // Número de onda característico del espacio
 double k2 = k*k;
+const double A = 0.01;
 
 double potential(int i){  // i por convención es índice de variable espacial
     /*
     Función de condición inicial de potencial.
     */
 	double g;
-	g=-sin(k*i)/k2;
+	g=-A*sin(k*i)/k2;
 	return (g);
 }
 double charge_density(int i){
     /*
     Función para definir la densidad de carga
     */
-	return ( sin(k*i) );
+	return ( A*sin(k*i) );
 }
 
 double fi[Lx][N], fip[Lx][N];  // Distribuciones (2 copias)
@@ -125,7 +126,7 @@ double rmsError(void){
     int i;
     double sum = 0;
     for (i=0; i<Lx; i++){
-       sum += (GetPhi(i) - potential(i))*(GetPhi(i) - potential(i));
+       sum += (Phi[i] - potential(i))*(Phi[i] - potential(i));
     }
     return sqrt(sum/Lx);
 }
@@ -172,8 +173,8 @@ int main(){
 	for(int a=0;a<2;a++)
 		fclose(X[a]);
 
+    // Printing rms error
+    cout << "RMS error is: " << rmsError() << endl;
 
-	
 	return 0;
-
 }
