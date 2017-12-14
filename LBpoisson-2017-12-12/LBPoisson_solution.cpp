@@ -132,7 +132,7 @@ int main(){
 	}
 	
 	double error_global = 0.0;
-	for(int i=0;i<N;i++){
+	for(int i=0;i<Lx;i++){
 		error_global += (Phi[i] - ( -K*sin(2*M_PI*i/Lx)/(2*M_PI/Lx)/(2*M_PI/Lx) ))*(Phi[i] - ( -K*sin(2*M_PI*i/Lx)/(2*M_PI/Lx)/(2*M_PI/Lx) ))/Lx;
 	}
 	error_global = sqrt(error_global);
