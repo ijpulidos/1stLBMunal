@@ -40,3 +40,11 @@ The idea in this session was completing the code for the LBM for the Poisson equ
 
 Completing/implementing density charges and initial conditions and finding a power law for
 the error coefficient epsilon respect to the size of the system.
+
+**Solution**
+
+The solution to the exercise is in both `LBPoisson_solution.ccp` and my solution in 
+`LBPoisson_exercise.cpp`. A plotting routine to plot the RMS error in terms of the size of
+the lattice is in the python script `plotting.py`
+
+## LBM for fluid dynamics - 2017-12-13
