@@ -128,7 +128,7 @@ double rmsError(void){
     for (i=0; i<Lx; i++){
        sum += (Phi[i] - potential(i))*(Phi[i] - potential(i));
     }
-    return sqrt(sum/Lx);
+    return sqrt(sum)/Lx;
 }
 
 int main(){
@@ -144,9 +144,9 @@ int main(){
 		
 		error=0.0;
 		for(int i=0;i<Lx;i++){
-			error += (Phi_old[i]-Phi[i])*(Phi_old[i]-Phi[i])/Lx;  // calcular error/varianza numérico, para chequear tolerancia
+			error += (Phi_old[i]-Phi[i])*(Phi_old[i]-Phi[i]);  // calcular error/varianza numérico, para chequear tolerancia
 		}
-		error = sqrt(error);
+		error = sqrt(error)/Lx;
 		for(int i=0;i<Lx;i++){
 			Phi_old[i]=Phi[i];
 		}
