@@ -137,11 +137,13 @@ void LatticeBoltzmann::Adveccione(void){
 }
 void LatticeBoltzmann::Imprimase(const char * NombreArchivo,int t){
   ofstream MiArchivo(NombreArchivo);
-  for(int ix=0;ix<Lx;ix+=4)
+  for(int ix=0;ix<Lx;ix+=4){
     for(int iy=0;iy<Ly;iy+=4)
       MiArchivo<<ix<<" "<<iy<<" "
 	       <<4.0/UX0*(Ux(ix,iy,true)-UX0)<<" "
 	       <<4.0/UX0*Uy(ix,iy,true)<<endl;
+    MiArchivo<<endl;
+  }
   MiArchivo.close();
 }
 
