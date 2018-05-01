@@ -18,8 +18,8 @@ const double tau = 0.5;
 const double Utau = 1.0/tau;
 const double UmUtau = 1.0-Utau;
 
-const int Lx = 100;  // Tamaño dominio en x
-const int Ly = 100;  // Tamaño dominio en y
+const int Lx = 512;  // Tamaño dominio en x
+const int Ly = 512;  // Tamaño dominio en y
 const int Q = 5;  // Número de pesos/vectores en cada celda
 
 
@@ -30,10 +30,13 @@ class LatticeBoltzmann{
     // TODO: Tratar de hacer las cosas más eficientes al usar punteros en lugar de arreglos bidimensionales.
     private:
         double weights[Q];  // Pesos del esquema de LB
-        int velocities[2][Q];  // Velocidades de la celda (micro). Convención: v_{ix}=velocities[0][i]
+//        int velocities[2][Q];  // Velocidades de la celda (micro). Convención: v_{ix}=velocities[0][i]
                                   // Dejar la i de último índice hace que sea más eficiente por memoria contigua
                                   // Tienen que ser int/enteros para que se puedan sumar dentro de la advección
-        double f[Lx][Ly][Q], f_new[Lx][Ly][Q];  // Probability densities arrays f[ix][iy][i]
+        int** velocities;
+//        double f[Lx][Ly][Q], f_new[Lx][Ly][Q];  // Probability densities arrays f[ix][iy][i]
+        double*** f;
+        double*** f_new;
     public:
         LatticeBoltzmann(void);
         double rho(int ix, int iy, bool isNew);
@@ -54,7 +57,25 @@ LatticeBoltzmann::LatticeBoltzmann(void){
     // Weights
     weights[0] = W0;
     weights[1] = weights[2] = weights[3] = weights[4] = 1.0/6;
-    // Velocities
+    // Allocation of dynamic arrays
+    velocities = new int*[2];
+    for (int i=0; i<2; ++i)
+            velocities[i] = new int[Q];
+    f = new double**[Lx];
+    for (int i=0; i<Lx; ++i)
+        f[i] = new double*[Ly];
+    for (int i=0; i<Lx; ++i){
+        for (int j=0; j<Ly; ++j)
+            f[i][j] = new double[Q];
+    }
+    f_new = new double**[Lx];
+    for (int i=0; i<Lx; ++i)
+        f_new[i] = new double*[Ly];
+    for (int i=0; i<Lx; ++i){
+        for (int j=0; j<Ly; ++j)
+            f_new[i][j] = new double[Q];
+    }
+    // Velocities D2Q5
     velocities[0][0] = 0;  // v_0
     velocities[1][0] = 0;
     velocities[0][1] = 1;  // v_1
@@ -211,7 +232,7 @@ int main() {
         ondas.streaming();
     }
 
-    ondas.print_data("ondas.dat", time);
+    ondas.print_data("waves.dat", time);
 
     return 0;
 }
