@@ -48,3 +48,18 @@ The solution to the exercise is in both `LBPoisson_solution.ccp` and my solution
 the lattice is in the python script `plotting.py`
 
 ## LBM for fluid dynamics - 2017-12-13
+
+LBM for basic fluid dynamics, relatively low Reynolds numbers.
+
+This would create a file called "fluid.dat" with x, y, vx, vy data in it. You
+can plot the data using `gnuplot` with the following commands for heat map:
+
+  set pm3d
+  unset surface
+  set view map
+  splot "fluid.dat"
+
+or to see arrows
+
+  plot "fluid.dat" with vector
+    

@@ -4,7 +4,7 @@
 #include <cmath>
 using namespace std;
 
-const int Lx=256;
+const int Lx=512;
 const int Ly=128;
 
 const int Q=9;
@@ -13,16 +13,20 @@ const double tau=0.53;
 const double Utau=1.0/tau;
 const double UmUtau=1-Utau;
 
-const double RHO0=1.0, UX0=0.06, UY0=0;
+const double RHO0=1.0, UX0=0.1, UY0=0;
 
 enum TipoCelda{aire,obstaculo,ventilador};
 
 class LatticeBoltzmann{
 private:
   double w[Q];
-  int v[2][Q];//v_{ix}=v[0][i] ,v_{iy}=v[1][i]
-  double f[Lx][Ly][Q],fnew[Lx][Ly][Q];//f[ix][iy][i]
-  TipoCelda Celda[Lx][Ly];
+  //int v[2][Q];//v_{ix}=v[0][i] ,v_{iy}=v[1][i]
+  int** v;
+  //double f[Lx][Ly][Q],fnew[Lx][Ly][Q];//f[ix][iy][i]
+  double*** f;
+  double*** fnew;
+  //TipoCelda Celda[Lx][Ly];
+  TipoCelda** Celda;
 public:
   LatticeBoltzmann(void);
   void ConstruyeTuGeometria(void);
@@ -57,7 +61,15 @@ LatticeBoltzmann::LatticeBoltzmann(void){
   w[0]=4.0/9; 
   w[1]=w[2]=w[3]=w[4]=1.0/9;
   w[5]=w[6]=w[7]=w[8]=1.0/36;
-  //los vectores
+  // Allocating dynamic memory arrays
+  // Cell Types
+  Celda = new TipoCelda*[Lx];
+  for (int i=0; i<Lx; ++i)
+    Celda[i] = new TipoCelda[Ly];
+  // Velocities
+  v = new int*[2];
+  for (int i=0; i<2; ++i)
+    v[i] = new int[Q];
   v[0][0]=0;
   v[1][0]=0;
   
@@ -66,6 +78,21 @@ LatticeBoltzmann::LatticeBoltzmann(void){
   
   v[0][5]=1;  v[0][6]=-1; v[0][7]=-1;  v[0][8]=1;
   v[1][5]=1;  v[1][6]=1;  v[1][7]=-1;  v[1][8]=-1;
+  
+  // Equilibrium distributions
+  f =  new double**[Lx];
+  for (int i=0; i<Lx; ++i)
+    f[i] = new double*[Ly];
+  for (int i=0; i<Lx; ++i)
+    for (int j=0; j<Ly; ++j)
+      f[i][j] = new double[Q];
+  
+  fnew =  new double**[Lx];
+  for (int i=0; i<Lx; ++i)
+    fnew[i] = new double*[Ly];
+  for (int i=0; i<Lx; ++i)
+    for (int j=0; j<Ly; ++j)
+      fnew[i][j] = new double[Q];
 }
 
 double LatticeBoltzmann::rho(int ix,int iy,bool UsarNew){
@@ -149,7 +176,7 @@ void LatticeBoltzmann::Imprimase(const char * NombreArchivo,int t){
 
 int main(void){
   LatticeBoltzmann Fluido;
-  int t,tmax=10000;
+  int t,tmax=8000;
   
   Fluido.ConstruyeTuGeometria();
   Fluido.Inicie();
@@ -157,7 +184,7 @@ int main(void){
     Fluido.Colisione(t);
     Fluido.Adveccione();
   }
-  Fluido.Imprimase("Fluido.dat",t);
+  Fluido.Imprimase("fluid.dat",t);
 
   return 0;
 }
