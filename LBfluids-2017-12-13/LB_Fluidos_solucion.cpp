@@ -1,11 +1,11 @@
-//Mi primer programa en C++
-#include <iostream> 
+#include <iostream>
 #include <fstream> 
 #include <cmath>
+#include <omp.h>  // For OpenMP prallel capabilities
 using namespace std;
 
-const int Lx=512;
-const int Ly=128;
+const int Lx=1024;
+const int Ly=512;
 
 const int Q=9;
 
@@ -13,7 +13,7 @@ const double tau=0.53;
 const double Utau=1.0/tau;
 const double UmUtau=1-Utau;
 
-const double RHO0=1.0, UX0=0.1, UY0=0;
+const double RHO0=1.0, UX0=0.06, UY0=0;
 
 enum TipoCelda{aire,obstaculo,ventilador};
 
@@ -49,7 +49,7 @@ void LatticeBoltzmann::ConstruyeTuGeometria(void){
   for(iy=0;iy<Ly;iy++)
     Celda[0][iy]=ventilador;
   //Obstaculo
-  int xc=Lx/8.0, yc=Ly/2.0, R=Ly/5.0;
+  int xc=Lx/8.0, yc=Ly/2.0, R=Ly/16.0;
   for(ix=0;ix<Lx;ix++)
     for(iy=0;iy<Ly;iy++)
       if((ix-xc)*(ix-xc)+(iy-yc)*(iy-yc)<=R*R)
@@ -104,6 +104,7 @@ double LatticeBoltzmann::rho(int ix,int iy,bool UsarNew){
       suma+=f[ix][iy][i];
   return suma;
 }
+
 double LatticeBoltzmann::Ux(int ix,int iy,bool UsarNew){
   int i; double suma=0;
   for(i=0;i<Q;i++)
@@ -113,6 +114,7 @@ double LatticeBoltzmann::Ux(int ix,int iy,bool UsarNew){
       suma+=v[0][i]*f[ix][iy][i];
   return suma/rho(ix,iy,UsarNew);
 }
+
 double LatticeBoltzmann::Uy(int ix,int iy,bool UsarNew){
   int i; double suma=0;
   for(i=0;i<Q;i++)
@@ -122,12 +124,14 @@ double LatticeBoltzmann::Uy(int ix,int iy,bool UsarNew){
       suma+=v[1][i]*f[ix][iy][i];
   return suma/rho(ix,iy,UsarNew);
 }
+
 double LatticeBoltzmann::feq(int i,double rho0,double Ux0,double Uy0){
   double UdotVi=Ux0*v[0][i]+Uy0*v[1][i];
   double U2=Ux0*Ux0+Uy0*Uy0;
 
   return w[i]*rho0*(1+3*UdotVi+4.5*UdotVi*UdotVi-1.5*U2);
 }
+
 void LatticeBoltzmann::Inicie(void){
   int ix,iy,i;
   for(ix=0;ix<Lx;ix++)
@@ -138,8 +142,10 @@ void LatticeBoltzmann::Inicie(void){
 	else
 	  f[ix][iy][i]=fnew[ix][iy][i]=feq(i,RHO0,UX0,UY0);
 }
+
 void LatticeBoltzmann::Colisione(int t){
   int ix,iy,i; double rho0,Ux0,Uy0; TipoCelda Celda0;
+  #pragma omp parallel for private(ix,iy,i,rho0,Ux0,Uy0,Celda0)
   for(ix=0;ix<Lx;ix++)
     for(iy=0;iy<Ly;iy++){//Para cada celda
       //Calcular las cantidades macroscopicas
@@ -147,21 +153,24 @@ void LatticeBoltzmann::Colisione(int t){
       Celda0=Celda[ix][iy];
       //Calcular las fnew en cada direccion
       for(i=0;i<Q;i++)
-	if(Celda0==ventilador) //ventilador
-	  fnew[ix][iy][i]=feq(i,RHO0,UX0,UY0);
-	else if(Celda0==obstaculo) //obstaculo
-	  fnew[ix][iy][i]=feq(i,RHO0,0,0);
-	else //aire
-	  fnew[ix][iy][i]=UmUtau*f[ix][iy][i]+Utau*feq(i,rho0,Ux0,Uy0);
+        if(Celda0==ventilador) //ventilador
+          fnew[ix][iy][i]=feq(i,RHO0,UX0,UY0);
+        else if(Celda0==obstaculo) //obstaculo
+          fnew[ix][iy][i]=feq(i,RHO0,0,0);
+        else //aire
+          fnew[ix][iy][i]=UmUtau*f[ix][iy][i]+Utau*feq(i,rho0,Ux0,Uy0);
     }
 }
+
 void LatticeBoltzmann::Adveccione(void){
   int ix,iy,i;
+  #pragma omp parallel for private(ix,iy,i)
   for(ix=0;ix<Lx;ix++)
     for(iy=0;iy<Ly;iy++)
-      for(i=0;i<Q;i++) 
-	f[(ix+v[0][i]+Lx)%Lx][(iy+v[1][i]+Ly)%Ly][i]=fnew[ix][iy][i];
+      for(i=0;i<Q;i++)
+        f[(ix+v[0][i]+Lx)%Lx][(iy+v[1][i]+Ly)%Ly][i]=fnew[ix][iy][i];
 }
+
 void LatticeBoltzmann::Imprimase(const char * NombreArchivo,int t){
   ofstream MiArchivo(NombreArchivo);
   for(int ix=0;ix<Lx;ix+=4){
@@ -176,7 +185,7 @@ void LatticeBoltzmann::Imprimase(const char * NombreArchivo,int t){
 
 int main(void){
   LatticeBoltzmann Fluido;
-  int t,tmax=8000;
+  int t,tmax=1000;
   
   Fluido.ConstruyeTuGeometria();
   Fluido.Inicie();
