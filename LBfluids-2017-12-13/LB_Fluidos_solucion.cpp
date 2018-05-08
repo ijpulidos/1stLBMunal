@@ -1,7 +1,8 @@
 #include <iostream>
 #include <fstream> 
 #include <cmath>
-#include <omp.h>  // For OpenMP prallel capabilities
+#include <omp.h>  // For OpenMP parallel capabilities
+#include <string>  // For string manipulations
 using namespace std;
 
 const int Lx=1024;
@@ -37,7 +38,7 @@ public:
   void Inicie(void);
   void Colisione(int t);
   void Adveccione(void);
-  void Imprimase(const char * NombreArchivo,int t);
+  void Imprimase(string NombreArchivo,int t);
 };
 void LatticeBoltzmann::ConstruyeTuGeometria(void){
   int ix,iy;
@@ -171,13 +172,24 @@ void LatticeBoltzmann::Adveccione(void){
         f[(ix+v[0][i]+Lx)%Lx][(iy+v[1][i]+Ly)%Ly][i]=fnew[ix][iy][i];
 }
 
-void LatticeBoltzmann::Imprimase(const char * NombreArchivo,int t){
+void LatticeBoltzmann::Imprimase(string NombreArchivo,int t){
   ofstream MiArchivo(NombreArchivo);
+  double Vx, Vy;
   for(int ix=0;ix<Lx;ix+=4){
-    for(int iy=0;iy<Ly;iy+=4)
+    for(int iy=0;iy<Ly;iy+=4){
+      if (Celda[ix][iy]==obstaculo){
+        // Poner velocidades nulas en obstaculos
+        Vx = 0.;
+        Vy = 0.;
+      }
+      else {
+        Vx = 4.0/UX0*(Ux(ix,iy,true) - UX0); // Se resta vel. "promedio" para ver vortices de mejor manera
+        Vy = 4.0/UX0*Uy(ix,iy,true);
+      }
       MiArchivo<<ix<<" "<<iy<<" "
-	       <<4.0/UX0*(Ux(ix,iy,true)-UX0)<<" "
-	       <<4.0/UX0*Uy(ix,iy,true)<<endl;
+	       <<Vx<<" "
+	       <<Vy<<endl;
+    }
     MiArchivo<<endl;
   }
   MiArchivo.close();
@@ -185,15 +197,17 @@ void LatticeBoltzmann::Imprimase(const char * NombreArchivo,int t){
 
 int main(void){
   LatticeBoltzmann Fluido;
-  int t,tmax=1000;
+  int t,tmax=2000;
   
   Fluido.ConstruyeTuGeometria();
   Fluido.Inicie();
   for(t=0;t<tmax;t++){
     Fluido.Colisione(t);
     Fluido.Adveccione();
+    if (t%50==0)
+        Fluido.Imprimase("output/fluid_" + to_string(t) + ".dat",t);
   }
-  Fluido.Imprimase("fluid.dat",t);
+  Fluido.Imprimase("output/fluid_" + to_string(t) + ".dat",t);
 
   return 0;
 }
