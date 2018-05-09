@@ -54,12 +54,23 @@ LBM for basic fluid dynamics, relatively low Reynolds numbers.
 This would create a file called "fluid.dat" with x, y, vx, vy data in it. You
 can plot the data using `gnuplot` with the following commands for heat map:
 
-  set pm3d
-  unset surface
-  set view map
-  splot "fluid.dat"
+    set pm3d
+    unset surface
+    set view map
+    splot "fluid.dat"
 
 or to see arrows
 
-  plot "fluid.dat" with vector
-    
+    plot "fluid.dat" with vector
+
+This LB for fluids code makes use of OpenMP parallel computing capabilities,
+to compile the code use the following command:
+
+    g++ -fopenmp LB_Fluidos_solucion.cpp
+
+You can manually set the number of threads to use with the `OMP_NUM_THREADS`
+environment variable, example, for 4 threads you can run the code with:
+
+    OMP_NUM_THREADS=28  ./a.out
+
+Assuming `a.out` is the executable file.
